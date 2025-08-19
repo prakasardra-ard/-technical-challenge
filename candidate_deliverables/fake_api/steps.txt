@@ -1,0 +1,73 @@
+FAKE_API/
+├── .vscode/                  # Editor settings (optional)
+├── Data/
+│   └── currency_rates.csv    # Static currency conversion rates
+├── src/
+│   ├── ingest_bookings.py    # Fetches bookings from fake API and inserts into DB
+│   ├── init_db.py            # Creates required PostgreSQL tables
+│   ├── load_rates.py         # Loads currency rates from CSV into DB
+│   ├── print_summary.py      # Prints final summary table to terminal
+│   ├── view_data.py          # Optional: inspect raw tables
+│   └── transform.sql         # SQL logic to generate final_summary table
+├── docker-compose.yml        # Spins up PostgreSQL container
+├── fake_api.py               # Flask app serving booking data
+└── requirements.txt          # Python dependencies
+
+1. Install Python Dependencies
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+2. Start PostgreSQL with Docker
+docker-compose up -d
+This launches a PostgreSQL container with:
+
+Host: localhost
+
+Port: 5432
+
+DB: truvi_db
+
+User: truvi
+
+Password: truvi
+
+3.Start the Fake API
+python fake_api.py
+This starts a Flask server at http://localhost:5000/api/bookings
+4.Database Initialization
+Run this once to create the required tables:
+python src/init_db.py
+Creates:
+
+bookings_raw
+
+currency_rates
+
+5.Ingest Bookings from API
+
+python src/ingest_bookings.py
+Fetches paginated booking data from the fake API
+
+Inserts into bookings_raw table
+
+Uses ON CONFLICT DO NOTHING to avoid duplicates
+6.Load Currency Rates
+python src/load_rates.py
+Reads currency_rates.csv
+
+Filters for rows where to_currency == 'GBP'
+
+Inserts into currency_rates table
+7.Transform Data
+bash
+psql -U truvi -d truvi_db -f src/transform.sql
+Aggregates bookings by company, country, and month
+
+Calculates revenue and final fees
+
+Converts fees to GBP using latest rates
+
+8.Populates final_summary table
+View Final Summary
+bash
+python src/print_summary.py
