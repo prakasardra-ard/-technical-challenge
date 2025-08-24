@@ -1,1 +1,7 @@
 flask
+docker
+requests
+pandas
+psycopg2-binary
+sqlalchemy
+python-dotenv

@@ -11,6 +11,7 @@ FAKE_API/
 │   └── transform.sql         # SQL logic to generate final_summary table
 ├── docker-compose.yml        # Spins up PostgreSQL container
 ├── fake_api.py               # Flask app serving booking data
+|___Main.py                   #Integrate each scripts          
 └── requirements.txt          # Python dependencies
 
 1. Install Python Dependencies
@@ -34,40 +35,22 @@ Password: truvi
 3.Start the Fake API
 python fake_api.py
 This starts a Flask server at http://localhost:5000/api/bookings
-4.Database Initialization
-Run this once to create the required tables:
-python src/init_db.py
-Creates:
+4.After starting the Fake API and PostgreSQL container, run:
 
-bookings_raw
-
-currency_rates
-
-5.Ingest Bookings from API
-
-python src/ingest_bookings.py
-Fetches paginated booking data from the fake API
-
-Inserts into bookings_raw table
-
-Uses ON CONFLICT DO NOTHING to avoid duplicates
-6.Load Currency Rates
-python src/load_rates.py
-Reads currency_rates.csv
-
-Filters for rows where to_currency == 'GBP'
-
-Inserts into currency_rates table
-7.Transform Data
 bash
-psql -U truvi -d truvi_db -f src/transform.sql
-Aggregates bookings by company, country, and month
+python main.py
+This script will:
 
-Calculates revenue and final fees
+Initialize the database and create required tables
 
-Converts fees to GBP using latest rates
+Ingest bookings from the fake API
 
-8.Populates final_summary table
-View Final Summary
-bash
-python src/print_summary.py
+Load GBP currency rates from the CSV
+
+Execute the transformation SQL
+
+Populate the final_summary table
+
+Print the final summary to the terminal
+
+No need to run individual scripts or psql manually — everything is handled in one go.
